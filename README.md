@@ -1,15 +1,17 @@
-# VideoClipEditViewTest
-使用android原生的MediaExtractor,MediaCodec和opengl对视频进行编辑, 裁剪,滤镜, 特效等.
+# Manager
+本库是fock[VideoClipEditViewTest]: https://github.com/shaopx/VideoClipEditViewTest
+因为项目需要，进行定制，特此学习
 
-最近忙其他的了,  后续的视频录制功能可能不会跟进了.  唉!  生活不易!
+####  库描述
+使用Android原生的MediaExtractor,MediaCodec和OpenGl对视频进行编辑,裁剪,滤镜,特效等.
 
 ####  功能点
-1. 视频播放  (不使用ffmpeg)   
+1. 视频播放  (不使用FFmpeg)
 2. 视频裁剪    
 3. 视频帧预览   
 4. 裁剪区间动态可选择.   
 5. 美颜滤镜
-6. opengl特效. 特效叠加后视频生成   
+6. OpenGl特效. 特效叠加后视频生成
 7. 摄像头预览时选择滤镜. --- 只支持L版本以上的手机
 
 ####  使用
