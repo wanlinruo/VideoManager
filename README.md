@@ -1,6 +1,5 @@
 # Manager
-本库是fock[VideoClipEditViewTest]: https://github.com/shaopx/VideoClipEditViewTest
-因为项目需要，进行定制，特此学习
+本库是fock[VideoClipEditViewTest](https://github.com/shaopx/VideoClipEditViewTest)，因为项目需要，进行定制，特此记录
 
 ####  库描述
 使用Android原生的MediaExtractor,MediaCodec和OpenGl对视频进行编辑,裁剪,滤镜,特效等.
