@@ -5,11 +5,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
-import com.spx.library.log
+import androidx.appcompat.app.AppCompatActivity
 import com.spx.library.VideoItem
 import com.spx.library.getVideoItem
+import com.spx.library.log
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         // 编辑视频(特效 滤镜)
         tv_local_video_edit.setOnClickListener { selectVideo(REQUEST_PICK_EDIT_CODE) }
 
-
+        // 摄像头预览
         tv_camera_preview.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val intent = Intent(this, CameraEffectActivity::class.java)
@@ -38,10 +38,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this@MainActivity, "目前摄像头预览滤镜效果只支持L以上版本", Toast.LENGTH_LONG).show()
             }
-
         }
-
-
     }
 
     override fun onResume() {
@@ -54,13 +51,14 @@ class MainActivity : AppCompatActivity() {
      */
     private fun selectVideo(requestCode: Int) {
         val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "video/*"
         startActivityForResult(intent, requestCode)
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == RESULT_OK && data != null) {
-            val videoItem = getVideoItem(contentResolver, data!!)
+            val videoItem = getVideoItem(contentResolver, data)
             videoItem?.run {
                 log("video title:$title, duration:${durationSec}, size:$size, path:$path")
                 when (requestCode) {
@@ -78,7 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startActivity(videoItem: VideoItem, activityClass: Class<*>) {
         startActivity(Intent(this, activityClass).apply {
-            videoItem?.run {
+            videoItem.run {
                 putExtra("video_path", path)
                 putExtra("video_duration", durationSec)
             }
@@ -100,7 +98,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
-            PERMISSION_REQUEST_CODE -> if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            PERMISSION_REQUEST_CODE -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this@MainActivity, "permission has been grunted.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@MainActivity, "[WARN] permission is not grunted.", Toast.LENGTH_SHORT).show()
