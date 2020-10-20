@@ -26,7 +26,7 @@ fun initPlayer(context: Context, videoUrl:String, playerView: PlayerView,
 
     var loadControl = MyLoadControl()
 
-    var player = ExoPlayerFactory.newSimpleInstance( DefaultRenderersFactory(context),
+    val player = ExoPlayerFactory.newSimpleInstance( DefaultRenderersFactory(context),
             DefaultTrackSelector(),DefaultLoadControl(),null )
 
     playerView.visibility = View.VISIBLE

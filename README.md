@@ -1,4 +1,4 @@
-# Manager
+# VideoManager
 本库是fock[VideoClipEditViewTest](https://github.com/shaopx/VideoClipEditViewTest)，因为项目需要，进行定制，特此记录
 
 ####  库描述

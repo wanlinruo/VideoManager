@@ -4,9 +4,9 @@ import android.content.Context
 
 interface VideoPlayer {
 
-    fun setupPlayer(context: Context, mediaPath:String)
-
     fun initPlayer()
+
+    fun setupPlayer(context: Context, mediaPath: String)
 
     fun pausePlayer()
 
@@ -15,11 +15,14 @@ interface VideoPlayer {
     fun seekToPosition(position: Long)
 
     fun getPlayerCurrentPosition(): Int
-    fun getDuration():Int
 
-    fun setPlaySpeed(speed:Float)
+    fun getDuration(): Int
+
+    fun setPlaySpeed(speed: Float)
 
     fun enableFramePreviewMode()
+
     fun releasePlayer()
+
     fun isPlaying(): Boolean
 }

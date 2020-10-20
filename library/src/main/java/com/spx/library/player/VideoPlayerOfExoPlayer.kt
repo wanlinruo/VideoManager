@@ -9,38 +9,34 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.source.ExtractorMediaSource
+import kotlin.math.abs
 
 
 class VideoPlayerOfExoPlayer(val playerView: PlayerView) : VideoPlayer {
 
     companion object {
-        val TAG = "VideoPlayerOfExoPlayer"
-        val PREVIEW_MODE_MS_LONG = 250
-        val PREVIEW_MODE_MS_SHORT = 100
+        const val TAG = "VideoPlayerOfExoPlayer"
+        const val PREVIEW_MODE_MS_LONG = 250
+        const val PREVIEW_MODE_MS_SHORT = 100
     }
 
     var lastSeekingPosition = 0L
     var previewModeTimeMs = PREVIEW_MODE_MS_LONG
     var exoPlayer: SimpleExoPlayer? = null
 
-    override fun enableFramePreviewMode() {
-        previewModeTimeMs = PREVIEW_MODE_MS_SHORT
-    }
-
     var videoListener = object : SimpleExoPlayer.VideoListener {
         override fun onVideoSizeChanged(width: Int, height: Int, _un: Int, _p: Float) {
             if (width < height) {
                 return
             }
-            playerView?.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT)
+            playerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         }
 
         override fun onRenderedFirstFrame() {
         }
-
     }
 
-    var listener: Player.DefaultEventListener = object : Player.DefaultEventListener() {
+    private var listener: Player.DefaultEventListener = object : Player.DefaultEventListener() {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             Log.d(TAG, "player state $playbackState")
 //            when (playbackState) {
@@ -70,13 +66,14 @@ class VideoPlayerOfExoPlayer(val playerView: PlayerView) : VideoPlayer {
         }
     }
 
-    override fun setupPlayer(context: Context, mediaPath: String) {
-        exoPlayer = com.spx.library.player.initPlayer(context, mediaPath, playerView!!, listener)
-        startPlayer()
-    }
 
     override fun initPlayer() {
 
+    }
+
+    override fun setupPlayer(context: Context, mediaPath: String) {
+        exoPlayer = initPlayer(context, mediaPath, playerView, listener)
+        startPlayer()
     }
 
     override fun pausePlayer() {
@@ -88,17 +85,11 @@ class VideoPlayerOfExoPlayer(val playerView: PlayerView) : VideoPlayer {
     }
 
 
-    var lastSeekingTime = 0L
-
     override fun seekToPosition(position: Long) {
 //        pausePlayer()
-        if (Math.abs(position - lastSeekingPosition) < previewModeTimeMs) {
+        if (abs(position - lastSeekingPosition) < previewModeTimeMs) {
             return
         }
-//        if(System.currentTimeMillis()-lastSeekingTime<200){
-//
-//        }
-
         exoPlayer?.seekTo(position)
 //        exoPlayer?.setVolume(0f)
         exoPlayer?.playWhenReady = true
@@ -106,24 +97,27 @@ class VideoPlayerOfExoPlayer(val playerView: PlayerView) : VideoPlayer {
     }
 
     override fun getPlayerCurrentPosition(): Int {
-        return exoPlayer?.currentPosition?.toInt() ?: 0
+        return (exoPlayer?.currentPosition ?: 0).toInt()
+    }
+
+    override fun getDuration(): Int {
+        return (exoPlayer?.duration ?: 0).toInt()
     }
 
     override fun setPlaySpeed(speed: Float) {
-        val param = PlaybackParameters(speed)
-        exoPlayer?.setPlaybackParameters(param)
+        exoPlayer?.playbackParameters = PlaybackParameters(speed)
+    }
+
+    override fun enableFramePreviewMode() {
+        previewModeTimeMs = PREVIEW_MODE_MS_SHORT
     }
 
     override fun releasePlayer() {
         exoPlayer?.release()
-        exoPlayer= null
+        exoPlayer = null
     }
 
     override fun isPlaying(): Boolean {
-       return exoPlayer?.playWhenReady == true && exoPlayer?.playbackState == STATE_READY
-    }
-
-    override fun getDuration(): Int {
-        return (exoPlayer?.duration?:0).toInt()
+        return exoPlayer?.playWhenReady == true && exoPlayer?.playbackState == STATE_READY
     }
 }

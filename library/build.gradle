@@ -28,6 +28,7 @@ dependencies {
     api 'com.google.android.exoplayer:exoplayer-core:2.8.3'
     api 'com.google.android.exoplayer:exoplayer-ui:2.8.3'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
 }
 repositories {
     mavenCentral()

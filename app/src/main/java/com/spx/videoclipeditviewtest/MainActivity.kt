@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.spx.library.VideoItem
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
      * 从系统中选择视频
      */
     private fun selectVideo(requestCode: Int) {
-        val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
         intent.type = "video/*"
         startActivityForResult(intent, requestCode)
     }
@@ -64,10 +65,8 @@ class MainActivity : AppCompatActivity() {
                 when (requestCode) {
                     REQUEST_PICK_CLIP_CODE -> startActivity(this, VideoClipActivity::class.java)
                     REQUEST_PICK_EDIT_CODE -> startActivity(this, VideoEditActivity::class.java)
-                    else -> {
-                    }
+                    else -> null
                 }
-
             }
         }
 

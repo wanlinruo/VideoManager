@@ -38,17 +38,18 @@ import java.text.DecimalFormat
 /**
  * 请根据手机中视频文件的地址更新下面的videoPlayUrl变量
  */
-class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
+class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback, View.OnClickListener {
 
     companion object {
-        val TAG = "VideoClipActivity"
-        val videoPlayUrl = DEFAULT_TEMP_VIDEO_LOCATION
+        const val TAG = "VideoClipActivity"
+        const val videoPlayUrl = DEFAULT_TEMP_VIDEO_LOCATION
     }
 
+    // 播放器实例
+    var videoPlayer: VideoPlayer? = null
 
     lateinit var videoPathInput: String
     lateinit var finalVideoPath: String
-    var videoPlayer: VideoPlayer? = null
 
     var handler = object : Handler() {
         override fun handleMessage(msg: Message?) {
@@ -70,35 +71,18 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_clip)
 
+        //获取传递参数
         videoPathInput = intent.getStringExtra("video_path")
         Log.d(TAG, "onCreate videoPathInput:$videoPathInput")
 
-
+        //初始化播放器
         initPlayer()
 
+        //初始化速度Bar
+        initSpeedBar()
 
-        play_spped_seakbar.max = SPEED_RANGE
-        var normalSpeed = play_spped_seakbar.max / 2
-        play_spped_seakbar.progress = normalSpeed
-
-        play_spped_seakbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                var speed = 1.0f + progress / 10f * 1f
-                if (progress > normalSpeed) {
-                    speed = 1.0f + (progress - normalSpeed) * 1f / normalSpeed
-                } else {
-                    speed = progress * 1f / normalSpeed + 0.01f
-                }
-
-                Log.d(TAG, "onProgressChanged  progress:$progress, speed:$speed")
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    setPlayerSpeed(speed)
-                }
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        //初始化监听
+        initListener()
 
         // 因为使用了egl, 必须在一个新线程中启动
         if (useSmoothPreview) {
@@ -108,35 +92,57 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
             hideShadow()
             onProcessCompleted()
         }
-
-
-        tv_framepreviewmode.setOnClickListener {
-            swithToFramePreviewMode()
-        }
-
-        tv_clip.setOnClickListener {
-            Log.d(TAG, "startMillSec:$startMillSec,  endMillSec:$endMillSec,  mediaDuration:$mediaDuration")
-            if (mediaDuration > 0 && endMillSec <= mediaDuration
-                    && startMillSec >= 0
-                    && endMillSec <= startMillSec + maxSelection
-                    && endMillSec >= startMillSec + minSelection) {
-                doClip()
-            } else {
-                showToast("裁剪选择时间段不正确哟")
-            }
-        }
     }
 
+    private fun initPlayer() {
+        if (USE_EXOPLAYER) {
+            player_view_mp.visibility = View.GONE
+            player_view_exo.visibility = View.VISIBLE
+            videoPlayer = VideoPlayerOfExoPlayer(player_view_exo)
+        } else {
+            player_view_mp.visibility = View.VISIBLE
+            player_view_exo.visibility = View.GONE
+            videoPlayer = VideoPlayerOfMediaPlayer(player_view_mp)
+        }
+        videoPlayer?.initPlayer()
+    }
+
+    private fun initSpeedBar() {
+        //设置最大进度
+        sb_play_speed.max = SPEED_RANGE
+        //取中位数
+        val normalSpeed = sb_play_speed.max / 2
+        //设置当前进度
+        sb_play_speed.progress = normalSpeed
+        //设置监听
+        sb_play_speed.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                //获取换算后的进度值
+                val speed: Float = if (progress > normalSpeed) {
+                    1.0f + (progress - normalSpeed) * 1f / normalSpeed
+                } else {
+                    progress * 1f / normalSpeed + 0.01f
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    //设置播放器速率值
+                    videoPlayer?.setPlaySpeed(speed)
+                }
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+    }
+
+    private fun initListener() {
+        tv_framepreviewmode.setOnClickListener(this)
+        tv_clip.setOnClickListener(this)
+    }
 
     private fun swithToFramePreviewMode() {
         showShadow()
         startProcess()
     }
-
-    private fun setPlayerSpeed(speed: Float) {
-        videoPlayer!!.setPlaySpeed(speed)
-    }
-
 
     private fun startProcess() {
 
@@ -188,7 +194,7 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
 
     private fun onProcessCompleted() {
 
-        var file = File(finalVideoPath)
+        val file = File(finalVideoPath)
         if (!file.exists()) {
             Toast.makeText(this, "请更新videoPlayUrl变量为本地手机的视频文件地址", Toast.LENGTH_LONG).show()
         }
@@ -365,22 +371,6 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
         }
     }
 
-    private fun initPlayer() {
-        if (USE_EXOPLAYER) {
-            player_view_mp.visibility = View.GONE
-            player_view_exo.visibility = View.VISIBLE
-            videoPlayer = VideoPlayerOfExoPlayer(player_view_exo)
-        } else {
-            player_view_mp.visibility = View.VISIBLE
-            player_view_exo.visibility = View.GONE
-            videoPlayer = VideoPlayerOfMediaPlayer(player_view_mp)
-        }
-
-        videoPlayer?.initPlayer()
-
-
-    }
-
 
     private fun doClip() {
         showShadow()
@@ -417,7 +407,7 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
                         Log.d(TAG, "onCompleted()")
                         runOnUiThread {
                             hideShadow()
-                            showToast("裁剪成功!新文件已经存放在:" + videoPlayUrl)
+                            showToast("裁剪成功!新文件已经存放在:$videoPlayUrl")
                             finish()
                         }
 
@@ -437,5 +427,22 @@ class VideoClipActivity : AppCompatActivity(), ClipContainer.Callback {
                     }
                 })
                 .start()
+    }
+
+    override fun onClick(v: View) {
+        when (v) {
+            tv_framepreviewmode -> swithToFramePreviewMode()
+            tv_clip -> {
+                Log.d(TAG, "startMillSec:$startMillSec,  endMillSec:$endMillSec,  mediaDuration:$mediaDuration")
+                if (mediaDuration > 0 && endMillSec <= mediaDuration
+                        && startMillSec >= 0
+                        && endMillSec <= startMillSec + maxSelection
+                        && endMillSec >= startMillSec + minSelection) {
+                    doClip()
+                } else {
+                    showToast("裁剪选择时间段不正确哟")
+                }
+            }
+        }
     }
 }

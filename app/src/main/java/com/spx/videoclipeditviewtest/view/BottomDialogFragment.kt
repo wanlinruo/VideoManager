@@ -63,7 +63,7 @@ class BottomDialogFragment : androidx.fragment.app.DialogFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
         return inflater.inflate(R.layout.bottom_dialog_fragment_layout, null)
     }
 
